@@ -8,6 +8,9 @@ src/weights/yolov3_9_5.pt
 # 数据集
 src/data/dataset/
 src/data/test_dataset/
+src/textures/*.npy
+src/temp_ablation_source/
+src/data/test/
 
 # ========== Python 通用 ==========
 __pycache__/
