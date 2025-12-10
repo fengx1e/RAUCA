@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}RAUCA - 结果展示{% endblock %}
+
+{% block content %}
+<div class="">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+    <div>
+      <div class="badge badge-primary" style="margin-bottom: 12px;">Dashboard</div>
+      <h1>结果生成与展示</h1>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 350px 1fr; gap: 40px;">
+
+    <!-- Configuration Panel -->
+    <div class="card" style="height: fit-content; position: sticky; top: 100px;">
+      <h3 style="margin-bottom: 24px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">参数配置</h3>
+      <form method="post" action="{{ url_for('generate') }}">
+        <div class="form-group">
+          <label>纹理文件 (.npy)</label>
+          {% if textures %}
+          <select name="textures" required>
+            {% for tex in textures %}
+            <option value="{{ tex }}">{{ tex }}</option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <input name="textures" placeholder="logs/.../texture.npy" required>
+          <small style="color: var(--text-secondary); display: block; margin-top: 4px;">未检测到 logs 目录下的
+            texture.npy，请手动输入路径或检查 logs 文件夹。</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>数据根路径</label>
+          <input name="datapath" placeholder="data/dataset" value="data/test_dataset" required>
+        </div>
+
+        <div class="grid grid-cols-2" style="gap: 12px;">
+          <div class="form-group">
+            <label>样本数 (0=全量)</label>
+            <input name="max_samples" type="text" value="8">
+          </div>
+          <div class="form-group">
+            <label>设备</label>
+            <input name="device" placeholder="0" value="0">
+          </div>
+        </div>
+
+        <details style="margin-bottom: 24px;">
+          <summary style="cursor: pointer; color: var(--accent-primary); font-size: 0.9rem;">高级设置</summary>
+          <div style="margin-top: 16px;">
+            <div class="form-group">
+              <label>Data Config</label>
+              <input name="data" value="{{ defaults.data }}">
+            </div>
+            <div class="form-group">
+              <label>YOLO Weights</label>
+              <input name="det_weights" value="{{ defaults.det_weights }}">
+            </div>
+            <div class="form-group">
+              <label>NSR Weights</label>
+              <input name="nsr_weights" value="{{ defaults.nsr_weights }}">
+            </div>
+            <div class="grid grid-cols-2" style="gap: 12px;">
+              <div class="form-group">
+                <label>Tex Size</label>
+                <input name="texture_size" value="{{ defaults.texture_size }}">
+              </div>
+              <div class="form-group">
+                <label>Img Size</label>
+                <input name="img_size" value="{{ defaults.img_size }}">
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          生成对比图并刷新
+        </button>
+      </form>
+    </div>
+
+    <!-- Results Grid -->
+    <div>
+      <h3 style="margin-bottom: 24px;">已生成的对比结果 <span
+          style="font-size: 1rem; color: var(--text-secondary); font-weight: normal;">({{ pairs|length }})</span></h3>
+
+      {% if pairs %}
+      <div class="grid grid-cols-1">
+        {% for item in pairs %}
+        <div class="card" style="padding: 24px;">
+          <div
+            style="display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 1.1rem; color: #fff; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">
+            <strong>检测样本 ID: {{ item.id }}</strong>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div style="position: relative;">
+              <img src="{{ url_for('serve_image', filename=item.orig.split('/')[-1]) }}" alt="orig"
+                style="width: 100%; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              <div
+                style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 6px; font-size: 14px; color: #fff; backdrop-filter: blur(4px);">
+                原始检测结果</div>
+            </div>
+            <div style="position: relative;">
+              <img src="{{ url_for('serve_image', filename=item.camo.split('/')[-1]) }}" alt="camo"
+                style="width: 100%; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              <div
+                style="position: absolute; bottom: 12px; left: 12px; background: rgba(56, 189, 248, 0.8); padding: 4px 12px; border-radius: 6px; font-size: 14px; color: #000; font-weight: 600; backdrop-filter: blur(4px);">
+                伪装检测结果</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card text-center" style="padding: 48px;">
+        <p style="color: var(--text-secondary); font-size: 1.1rem;">暂无对比结果，请在左侧配置参数并生成。</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

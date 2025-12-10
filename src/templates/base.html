@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RAUCA{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="nav-brand">RAUCA</a>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">首页</a>
+            <a href="{{ url_for('training') }}"
+                class="nav-link {% if request.endpoint == 'training' %}active{% endif %}">模型训练</a>
+            <a href="{{ url_for('results') }}"
+                class="nav-link {% if request.endpoint == 'results' %}active{% endif %}">功能展示</a>
+            <a href="{{ url_for('ablation') }}"
+                class="nav-link {% if request.endpoint == 'ablation' %}active{% endif %}">消融实验</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="card mb-4" style="border-left: 4px solid var(--accent-primary); padding: 1rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.875rem;">
+        &copy; 2025 RAUCA Project. Robust and Accurate UV-map-based Camouflage Attack.
+    </footer>
+
+</body>
+
+</html>

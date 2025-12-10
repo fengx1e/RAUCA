@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div
+  style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center;">
+
+  <div>
+    <h1 style="font-size: 4rem; margin-bottom: 24px; line-height: 1.1;">
+      <span
+        style="display: block; font-size: 5rem; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RAUCA</span>
+      鲁棒精准的 UV 贴图伪装攻击
+    </h1>
+    <p style="font-size: 1.5rem; color: var(--text-secondary); max-width: 800px; margin: 0 auto 48px;">
+      Robust and Accurate UV-map-based Camouflage Attack<br>
+      基于神经渲染管线的多视角对抗纹理生成系统
+    </p>
+  </div>
+
+  <div class="grid grid-cols-3" style="width: 100%; max-width: 1200px; gap: 32px;">
+
+    <a href="{{ url_for('training') }}" class="card"
+      style="text-decoration: none; text-align: left; position: relative; overflow: hidden;">
+      <div
+        style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--accent-secondary); filter: blur(80px); opacity: 0.2;">
+      </div>
+      <h3 style="font-size: 1.8rem; color: #fff; margin-bottom: 12px;">模型训练</h3>
+      <p style="color: var(--text-secondary);">
+        配置并启动针对特定 3D 模型的对抗纹理训练。支持自定义数据集与参数微调。
+      </p>
+      <div style="margin-top: 24px; color: var(--accent-primary); font-weight: 600;">进入训练 &rarr;</div>
+    </a>
+
+    <a href="{{ url_for('results') }}" class="card"
+      style="text-decoration: none; text-align: left; position: relative; overflow: hidden;">
+      <div
+        style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--accent-primary); filter: blur(80px); opacity: 0.2;">
+      </div>
+      <h3 style="font-size: 1.8rem; color: #fff; margin-bottom: 12px;">功能展示</h3>
+      <p style="color: var(--text-secondary);">
+        生成并可视化伪装攻击效果。对比 YOLOv3 在原始与伪装状态下的检测表现。
+      </p>
+      <div style="margin-top: 24px; color: var(--accent-primary); font-weight: 600;">查看结果 &rarr;</div>
+    </a>
+
+    <a href="{{ url_for('ablation') }}" class="card"
+      style="text-decoration: none; text-align: left; position: relative; overflow: hidden;">
+      <div
+        style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: #818cf8; filter: blur(80px); opacity: 0.2;">
+      </div>
+      <h3 style="font-size: 1.8rem; color: #fff; margin-bottom: 12px;">消融实验</h3>
+      <p style="color: var(--text-secondary);">
+        定量评估不同损失函数对攻击成功率与检测置信度的影响。
+      </p>
+      <div style="margin-top: 24px; color: var(--accent-primary); font-weight: 600;">开始实验 &rarr;</div>
+    </a>
+
+  </div>
+
+</div>
+{% endblock %}

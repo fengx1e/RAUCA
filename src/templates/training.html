@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}模型训练 - RAUCA{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>模型训练</h1>
+    <p>自定义参数运行高级伪装训练任务。</p>
+</div>
+
+<!-- Progress Container -->
+<div id="progress-container" class="card"
+    style="display: none; margin-bottom: 32px; border-left: 4px solid var(--accent-primary);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;">训练进行中...</h3>
+        <button id="stop-btn" type="button"
+            style="padding: 6px 16px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s;">停止训练</button>
+    </div>
+
+    <!-- Major Progress (Total Epochs) -->
+    <div style="margin-bottom: 16px;">
+        <div
+            style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-primary); margin-bottom: 4px;">
+            <span id="epoch-status">Total Progress: Epoch 0 / 10</span>
+            <span id="progress-percent">0%</span>
+        </div>
+        <div style="width: 100%; background-color: #e2e8f0; border-radius: 999px; height: 10px;">
+            <div id="progress-bar"
+                style="width: 0%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); height: 100%; border-radius: 999px; transition: width 0.5s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Minor Progress (Current Epoch Batch) -->
+    <div style="margin-bottom: 12px;">
+        <div
+            style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">
+            <span id="batch-text">当前轮次步数 (Batch Step)</span>
+            <span id="batch-percent">0%</span>
+        </div>
+        <div style="width: 100%; background-color: #e2e8f0; border-radius: 999px; height: 6px;">
+            <div id="batch-bar"
+                style="width: 0%; background-color: #64748b; height: 100%; border-radius: 999px; transition: width 0.3s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Metrics Board -->
+    <div id="metrics-board"
+        style="display: none; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1);">
+
+        <!-- Total Loss -->
+        <div
+            style="background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--card-border);">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">总损失 (Total Loss)</div>
+            <div id="metric-loss" style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #f87171;">
+                --</div>
+        </div>
+
+        <!-- Detection Loss -->
+        <div
+            style="background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--card-border);">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">检测损失 (Detect)</div>
+            <div id="metric-det" style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #fbbf24;">--
+            </div>
+        </div>
+
+        <!-- Smooth Loss -->
+        <div
+            style="background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--card-border);">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">平滑损失 (Smooth)</div>
+            <div id="metric-smooth"
+                style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #34d399;">--</div>
+        </div>
+
+        <!-- Speed -->
+        <div
+            style="background: var(--card-bg); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--card-border);">
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">训练速度 (Speed)</div>
+            <div id="metric-time" style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #38bdf8;">
+                --</div>
+        </div>
+
+        <!-- Time Info (Span 2 cols) -->
+        <div
+            style="grid-column: span 2; background: var(--card-bg); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--card-border);">
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">已用时间 (Elapsed):</span>
+            <span id="metric-elapsed" style="font-family: monospace; font-weight: 700; color: #e2e8f0;">--:--</span>
+        </div>
+
+        <div
+            style="grid-column: span 2; background: var(--card-bg); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--card-border);">
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">预计剩余 (ETA):</span>
+            <span id="metric-remaining" style="font-family: monospace; font-weight: 700; color: #e2e8f0;">--:--</span>
+        </div>
+    </div>
+</div>
+
+<form id="train-form" action="{{ url_for('run_training') }}" method="post">
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin-bottom: 32px;">
+
+        <!-- Dataset Config -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">数据集配置</h2>
+            </div>
+
+            <div class="form-group">
+                <label>数据根路径</label>
+                <input name="datapath" id="input-datapath" value="data/dataset" required>
+                <span class="help-text">包含 images 和 masks 的文件夹路径</span>
+            </div>
+
+            <div class="form-group">
+                <label>配置文件 (.yaml)</label>
+                <input name="data_yaml" id="input-data_yaml" value="data/carla.yaml" required>
+            </div>
+
+            <div class="form-group">
+                <label>3D 模型文件 (.obj)</label>
+                <input name="obj_file" id="input-obj_file" value="car_assets/audi_et_te.obj" required>
+            </div>
+        </div>
+
+        <!-- Hyperparameters -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">超参数设置</h2>
+            </div>
+
+            <div class="grid grid-cols-2" style="gap: 16px;">
+                <div class="form-group">
+                    <label>Epochs (轮数)</label>
+                    <input name="epochs" id="input-epochs" type="text" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Batch Size (批大小 - 固定)</label>
+                    <input name="batch_size" id="input-batch_size" type="text" value="1" readonly
+                        style="cursor: not-allowed; opacity: 0.7;">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2" style="gap: 16px;">
+                <div class="form-group">
+                    <label>Learning Rate (学习率)</label>
+                    <input name="lr" id="input-lr" type="text" value="0.01">
+                </div>
+                <div class="form-group">
+                    <label>设备 (GPU ID)</label>
+                    <input name="device" id="input-device" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Strategy -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">数据策略</h2>
+            </div>
+
+            <div class="form-group">
+                <label>训练数据比例</label>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <input type="range" id="fraction-slider" min="1" max="100" value="100" style="flex: 1;">
+                    <div style="position: relative; width: 80px;">
+                        <input type="text" name="data_fraction" id="fraction-input" value="100"
+                            style="padding-right: 24px;">
+                        <span
+                            style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none;">%</span>
+                    </div>
+                </div>
+                <span class="help-text">减少比例可加快验证速度</span>
+            </div>
+
+            <div class="form-group">
+                <label>采样方式</label>
+                <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0; cursor: pointer;">
+                        <input type="radio" name="sampling_method" value="random" checked> 随机采样 (Random)
+                    </label>
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0; cursor: pointer;">
+                        <input type="radio" name="sampling_method" value="sequential"> 顺序采样 (Sequential)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+        <button type="submit" id="start-btn" class="btn btn-primary" style="padding: 12px 32px;">开始训练</button>
+    </div>
+</form>
+
+<script>
+    // Slider and Input Sync
+    const slider = document.getElementById('fraction-slider');
+    const input = document.getElementById('fraction-input');
+
+    slider.addEventListener('input', function () {
+        input.value = this.value;
+    });
+
+    input.addEventListener('input', function () {
+        let val = parseInt(this.value);
+        if (isNaN(val)) val = 1;
+        if (val > 100) val = 100;
+        if (val < 1) val = 1;
+        // Only update slider if valid
+        slider.value = val;
+    });
+
+    // Stop Button Logic
+    document.getElementById('stop-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (confirm("确定要终止当前训练任务吗？")) {
+            fetch("{{ url_for('stop_training') }}", { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log("Training stopped by user.");
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    });
+
+    // Polling System
+    function updateStatus() {
+        fetch("{{ url_for('training_status') }}")
+            .then(response => response.json())
+            .then(data => {
+                const status = data.status;
+                const progress = data.progress || 0;
+                const batchProgress = data.batch_progress || 0;
+                const logs = data.log;
+                const config = data.config;
+
+                const progressContainer = document.getElementById('progress-container');
+                const progressBar = document.getElementById('progress-bar');
+                const batchBar = document.getElementById('batch-bar');
+                const epochStatus = document.getElementById('epoch-status');
+                const percentStatus = document.getElementById('progress-percent');
+                const batchPercent = document.getElementById('batch-percent');
+                const startBtn = document.getElementById('start-btn');
+                const stopBtn = document.getElementById('stop-btn');
+                const formInputs = document.querySelectorAll('#train-form input');
+
+                if (status === 'running') {
+                    // Show Progress UI
+                    progressContainer.style.display = 'block';
+
+                    progressBar.style.width = progress + '%';
+                    percentStatus.innerText = progress + '%';
+
+                    // Update numeric epoch status with sync
+                    epochStatus.innerText = `Total Progress: Epoch ${data.current_epoch} / ${data.total_epochs}`;
+
+                    // Update Batch Progress
+                    if (batchBar && batchPercent) {
+                        batchBar.style.width = batchProgress + '%';
+                        // Show "Batch: X / Y (Z%)" if available
+                        if (data.batch_current && data.batch_total) {
+                            batchPercent.innerText = `${data.batch_current} / ${data.batch_total} (${batchProgress}%)`;
+                        } else {
+                            batchPercent.innerText = batchProgress + '%';
+                        }
+                    }
+
+                    // UPDATE METRICS BOARD
+                    const metricsContainer = document.getElementById('metrics-board');
+                    if (data.current_loss !== undefined) {
+                        metricsContainer.style.display = 'grid';
+                        document.getElementById('metric-loss').innerText = data.current_loss.toFixed(4);
+
+                        // New Metrics
+                        if (data.loss_smooth !== undefined) document.getElementById('metric-smooth').innerText = data.loss_smooth.toFixed(4);
+                        if (data.loss_det !== undefined) document.getElementById('metric-det').innerText = data.loss_det.toFixed(4);
+                    }
+                    if (data.epoch_time) document.getElementById('metric-time').innerText = data.epoch_time;
+                    if (data.time_elapsed) document.getElementById('metric-elapsed').innerText = data.time_elapsed;
+                    if (data.time_remaining) document.getElementById('metric-remaining').innerText = data.time_remaining;
+
+                    // Disable Form
+                    startBtn.disabled = true;
+                    startBtn.innerText = '训练进行中...';
+                    formInputs.forEach(inp => inp.disabled = true);
+                    slider.disabled = true;
+                    stopBtn.disabled = false;
+
+                    // Sync Config
+                    if (config && Object.keys(config).length > 0) {
+                        restoreConfig(config);
+                    }
+
+                } else if (status === 'completed') {
+                    progressContainer.style.display = 'block';
+                    progressBar.style.width = '100%';
+                    epochStatus.innerText = '完成';
+                    percentStatus.innerText = '100%';
+
+                    // Re-enable form
+                    startBtn.disabled = false;
+                    startBtn.innerText = '开始训练';
+                    formInputs.forEach(inp => inp.disabled = false);
+                    slider.disabled = false;
+                    stopBtn.disabled = true; // Stop disabled when complete
+
+                    if (config && Object.keys(config).length > 0) {
+                        restoreConfig(config);
+                    }
+                } else if (status === 'terminated') {
+                    progressContainer.style.display = 'block';
+                    epochStatus.innerText = '已终止';
+
+                    startBtn.disabled = false;
+                    startBtn.innerText = '开始训练';
+                    formInputs.forEach(inp => inp.disabled = false);
+                    slider.disabled = false;
+                    stopBtn.disabled = true;
+                } else {
+                    if (status === 'error') {
+                        progressContainer.style.display = 'block';
+                        epochStatus.innerText = '错误';
+                    } else {
+                        progressContainer.style.display = 'none';
+                    }
+                    startBtn.disabled = false;
+                    startBtn.innerText = '开始训练';
+                    formInputs.forEach(inp => inp.disabled = false);
+                    slider.disabled = false;
+                    stopBtn.disabled = true;
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Helper to restore form values
+    function restoreConfig(config) {
+        if (document.getElementById('input-datapath').disabled) {
+            if (config.datapath) document.getElementById('input-datapath').value = config.datapath;
+            if (config.data_yaml) document.getElementById('input-data_yaml').value = config.data_yaml;
+            if (config.obj_file) document.getElementById('input-obj_file').value = config.obj_file;
+            if (config.epochs) document.getElementById('input-epochs').value = config.epochs;
+            if (config.batch_size) document.getElementById('input-batch_size').value = config.batch_size;
+            if (config.lr) document.getElementById('input-lr').value = config.lr;
+            if (config.device) document.getElementById('input-device').value = config.device;
+
+            if (config.data_fraction) {
+                slider.value = config.data_fraction;
+                input.value = config.data_fraction;
+            }
+            if (config.sampling_method) {
+                const radio = document.querySelector(`input[name="sampling_method"][value="${config.sampling_method}"]`);
+                if (radio) radio.checked = true;
+            }
+        }
+    }
+
+    // Poll every 1 second
+    setInterval(updateStatus, 1000);
+    updateStatus();
+
+</script>
+{% endblock %}

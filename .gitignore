@@ -1,0 +1,78 @@
+# 渲染器源码（体积大、可重新 clone）
+src/Neural_Renderer_RAUCA/
+
+# 预训练权重
+src/NRP_weights/
+src/weights/yolov3_9_5.pt
+
+# 数据集
+src/data/dataset/
+src/data/test_dataset/
+
+# ========== Python 通用 ==========
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+parts/
+bin/
+var/
+wheels/
+pip-wheel-metadata/
+*.wheel
+
+# ========== 机器学习/深度学习 ==========
+*.pth
+*.pt
+*.pkl
+*.h5
+*.ckpt
+*.onnx
+*.engine
+*.mlmodel
+*.tflite
+lightning_logs/
+logs/
+runs/
+
+# ========== 数据与压缩包 ==========
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.lmdb
+*.mdb
+*.sqlite
+*.db
+
+# ========== IDE & 系统 ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========== 日志 & 临时 ==========
+*.log
+*.err
+*.out
+.temp/
+tmp/
+*.tmp
+*.cache
+*.bak
+
+# ========== 隐私/密钥 ==========
+*.pem
+*.key
+.env
+*.secret

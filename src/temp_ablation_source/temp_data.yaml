@@ -1,0 +1,6 @@
+names:
+  0: car
+path: /home/Private/zrz/Robust-and-Accurate-UV-map-based-Camouflage-Attack-main/src/temp_ablation_source
+test: test_new
+train: test_new
+val: test_new
