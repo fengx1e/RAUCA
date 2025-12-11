@@ -129,6 +129,13 @@ conda env update --file environment.yml
     * **下载地址**: [NRP_weights](https://pan.baidu.com/s/1iKtlv44Uq_1YcQyLH0SSlQ?pwd=e17m)
     * **放置位置**: 请确保 `src/NRP_weights/` 目录下存在 `NRP_weight.pth` 文件。
 
+### 5. 准备数据集
+
+**下载地址**: [Dataset](https://pan.baidu.com/s/17LdfDcGt3aZygN84JCP46Q?pwd=ir65)
+
+**放置位置**: 下载解压后请放置在 `src/data/dataset` 目录下并修改 `src/data/carla.yaml` 文件以匹配数据集结构。
+
+
 ## 🚀 运行系统
 
 一切准备就绪后，您可以通过以下命令启动 Web 可视化系统：
